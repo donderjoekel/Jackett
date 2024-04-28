@@ -1,0 +1,87 @@
+<#@ template hostspecific="true" language="C#" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.IO" #>
+<#@ include file="../Model.ttinclude" #>
+
+<#
+    var models = new List<BuddyComplexModel>()
+    {
+        new("BoxManhwa", "Box Manhwa", "https://boxmanhwa.com/"),
+        new("TrueManga", "True Manga", "https://truemanga.com/"),
+        new("ManhwaTube", "Manhwa Tube", "https://manhwatube.com/"),
+        new("MangaXYZ", "Manga XYZ", "https://mangaxyz.com/"),
+        new("MangaSpin", "Manga Spin", "https://mangaspin.com/"),
+        new("MangaSaga", "Manga Saga", "https://mangasaga.com/"),
+        new("MangaMad", "Manga Mad", "https://mangamad.com/"),
+        new("MangaForest", "Manga Forest", "https://mangaforest.com/"),
+        new("MangaFab", "Manga Fab", "https://mangafab.com/"),
+        new("MangaCute", "Manga Cute", "https://mangacute.com/"),
+        new("MangaBuddy", "Manga Buddy", "https://mangabuddy.com/home/"),
+    };
+
+    var generatedFolderPath = Path.Combine(Path.GetDirectoryName(Host.ResolvePath("BuddyComplexIndexer.cs")), "Generated");
+    if (Directory.Exists(generatedFolderPath))
+        Directory.Delete(generatedFolderPath, true);
+
+    foreach (var model in models)
+    {
+        var fileName = $"{model.ClassName}Indexer.g.cs";
+        var filePath = Host.ResolvePath(fileName);
+
+        var directoryName = Path.GetDirectoryName(filePath);
+        var generatedPath = Path.Combine(directoryName, "Generated");
+
+        if (!Directory.Exists(generatedPath))
+            Directory.CreateDirectory(generatedPath);
+
+        var generatedFilePath = Path.Combine(generatedPath, fileName);
+
+        File.WriteAllText(generatedFilePath, GenerateClass(model));
+    }
+#>
+
+<#+
+    public string GenerateClass(Model model)
+    {
+        return $@"// Auto generated
+
+using System.Diagnostics.CodeAnalysis;
+using Jackett.Common.Indexers.Abstract;
+using Jackett.Common.Services.Interfaces;
+using Jackett.Common.Utils.Clients;
+using NLog;
+
+namespace Jackett.Common.Indexers.BuddyComplex
+{{
+    [ExcludeFromCodeCoverage]
+    public class {model.ClassName} : BuddyComplexIndexer
+    {{
+        public {model.ClassName}(IIndexerConfigurationService configService,
+                          WebClient client,
+                          Logger logger,
+                          IProtectionService p,
+                          ICacheService cacheService)
+            : base(configService: configService,
+                   client: client,
+                   logger: logger,
+                   p: p,
+                   cacheService: cacheService)
+        {{
+        }}
+
+        public override string Id => ""{model.Id}"";
+        public override string Name => ""{model.Name}"";
+        public override string SiteLink {{ get; protected set; }} = ""{model.SiteLink}"";
+
+    }}
+}}
+";
+    }
+
+    public class BuddyComplexModel : Model
+    {
+        public BuddyComplexModel(string className, string name, string siteLink) : base(className, "buddycomplex", name, siteLink)
+        {
+        }
+    }
+#>

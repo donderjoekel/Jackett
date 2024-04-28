@@ -1,0 +1,98 @@
+<#@ template hostspecific="true" language="C#" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.IO" #>
+<#@ include file="../Model.ttinclude" #>
+
+<#
+    var models = new List<MangaStreamModel>()
+    {
+        new("AnimatedGlitchedComics", "Animated Glitched Comics", "https://agscomics.com/", "series"),
+        new("AnimatedGlitchedScans", "Animated Glitched Scans", "https://anigliscans.xyz/", "series"),
+        new("AscalonScans", "Ascalon Scans", "https://ascalonscans.com/"),
+        new("AstraScans", "Astra Scans", "https://astrascans.org/", "series"),
+        new("AsuraScans", "Asura Toon", "https://asuratoon.com/"),
+        new("CypherScans", "Cypher Scans", "https://cypherscans.xyz/"),
+        new("DrakeScans", "Drake Scans", "https://drake-scans.com/"),
+        new("FlameComics", "Flame Comics", "https://flamecomics.com/", "series"),
+        new("FreakScans", "Freak Scans", "https://freakscans.com/"),
+        new("KomikLab", "Komiklab Scans", "https://komiklab.com/"),
+        new("LuminousScans", "Luminous Scans", "https://luminousscans.com/", "series"),
+        new("NightScans", "Night Scans", "https://night-scans.com/"),
+        new("QuantumScans", "Quantum Scans", "https://readers-point.space/", "series"),
+        new("RavenScans", "Raven Scans", "https://ravenscans.com/"),
+        new("SuryaScans", "Surya Scans", "https://suryatoon.com/"),
+        new("VoidScans", "Void Scans", "https://hivescans.com/"),
+        new("xCaliBRScans", "xCaliBR Scans", "https://xcalibrscans.com/webcomics/"),
+        new("MangaGalaxy", "Manga Galaxy", "https://mangagalaxy.me", "series"),
+    };
+
+    var generatedFolderPath = Path.Combine(Path.GetDirectoryName(Host.ResolvePath("MangaStreamIndexer.cs")), "Generated");
+    if (Directory.Exists(generatedFolderPath))
+        Directory.Delete(generatedFolderPath, true);
+
+    foreach (var model in models)
+    {
+        var fileName = $"{model.ClassName}Indexer.g.cs";
+        var filePath = Host.ResolvePath(fileName);
+
+        var directoryName = Path.GetDirectoryName(filePath);
+        var generatedPath = Path.Combine(directoryName, "Generated");
+
+        if (!Directory.Exists(generatedPath))
+            Directory.CreateDirectory(generatedPath);
+
+        var generatedFilePath = Path.Combine(generatedPath, fileName);
+
+        File.WriteAllText(generatedFilePath, GenerateClass(model));
+    }
+#>
+
+<#+
+    public string GenerateClass(MangaStreamModel model)
+    {
+        return $@"// Auto generated
+
+using System.Diagnostics.CodeAnalysis;
+using Jackett.Common.Indexers.Abstract;
+using Jackett.Common.Services.Interfaces;
+using Jackett.Common.Utils.Clients;
+using NLog;
+
+namespace Jackett.Common.Indexers.MangaStream
+{{
+    [ExcludeFromCodeCoverage]
+    public class {model.ClassName} : MangaStreamIndexer
+    {{
+        public {model.ClassName}(IIndexerConfigurationService configService,
+                          WebClient client,
+                          Logger logger,
+                          IProtectionService p,
+                          ICacheService cacheService)
+            : base(configService: configService,
+                   client: client,
+                   logger: logger,
+                   p: p,
+                   cacheService: cacheService)
+        {{
+        }}
+
+        public override string Id => ""{model.Id}"";
+        public override string Name => ""{model.Name}"";
+        public override string SiteLink {{ get; protected set; }} = ""{model.SiteLink}"";
+        protected override string Key => ""{model.Key}"";
+    }}
+}}
+";
+    }
+
+    public class MangaStreamModel : Model
+    {
+        public readonly string Key = "manga";
+
+        public MangaStreamModel(string className, string name, string siteLink, string key = null)
+            : base(className, "mangastream", name, siteLink)
+        {
+            Key = key ?? Key;
+        }
+    }
+#>

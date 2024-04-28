@@ -1,0 +1,74 @@
+<#@ template hostspecific="true" language="C#" #>
+<#@ import namespace="System.Collections.Generic" #>
+<#@ import namespace="System.IO" #>
+<#@ include file="../Model.ttinclude" #>
+
+<#
+    var models = new List<NepNepModel>()
+    {
+        new("Manga4Life", "Manga Life", "https://manga4life.com/"),
+        new("MangaSee123", "Manga See", "https://mangasee123.com/")
+    };
+
+    foreach (var model in models)
+    {
+        var fileName = $"{model.ClassName}Indexer.g.cs";
+        var filePath = Host.ResolvePath(fileName);
+
+        var directoryName = Path.GetDirectoryName(filePath);
+        var generatedPath = Path.Combine(directoryName, "Generated");
+
+        if (!Directory.Exists(generatedPath))
+            Directory.CreateDirectory(generatedPath);
+
+        var generatedFilePath = Path.Combine(generatedPath, fileName);
+
+        File.WriteAllText(generatedFilePath, GenerateClass(model));
+    }
+#>
+
+<#+
+    public string GenerateClass(Model model)
+    {
+        return $@"// Auto generated
+
+using System.Diagnostics.CodeAnalysis;
+using Jackett.Common.Indexers.Abstract;
+using Jackett.Common.Services.Interfaces;
+using Jackett.Common.Utils.Clients;
+using NLog;
+
+namespace Jackett.Common.Indexers.NepNep
+{{
+    [ExcludeFromCodeCoverage]
+    public class {model.ClassName} : NepNepIndexer
+    {{
+        public {model.ClassName}(IIndexerConfigurationService configService,
+                          WebClient client,
+                          Logger logger,
+                          IProtectionService p,
+                          ICacheService cacheService)
+            : base(configService: configService,
+                   client: client,
+                   logger: logger,
+                   p: p,
+                   cacheService: cacheService)
+        {{
+        }}
+
+        public override string Id => ""{model.Id}"";
+        public override string Name => ""{model.Name}"";
+        public override string SiteLink {{ get; protected set; }} = ""{model.SiteLink}"";
+
+    }}
+}}
+";
+    }
+
+    public class NepNepModel : Model
+    {
+        public NepNepModel(string className, string name, string siteLink) : base(className, "nepnep", name, siteLink)
+        {
+        }
+    }
+#>

@@ -3,7 +3,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <Version>0.0.0</Version>
-    <LangVersion>8</LangVersion>
+    <LangVersion>default</LangVersion>
     <NoWarn />
     <WarningsAsErrors />
     <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
@@ -11,7 +11,6 @@
 
   <ItemGroup>
     <PackageReference Include="AngleSharp" Version="1.1.2" />
-    <PackageReference Include="AngleSharp.Xml" Version="1.0.0" />
     <PackageReference Include="Autofac" Version="6.5.0" />
     <PackageReference Include="AutoMapper" Version="10.1.1" />
     <PackageReference Include="BencodeNET" Version="4.0.0" />
@@ -22,6 +21,7 @@
     <PackageReference Include="Microsoft.AspNetCore.WebUtilities" Version="2.2.0" />
     <PackageReference Include="Microsoft.CSharp" Version="4.7.0" />
     <PackageReference Include="MimeMapping" Version="1.0.1.50" />
+    <PackageReference Include="MonoTorrent" Version="2.0.7" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
     <PackageReference Include="NLog" Version="5.1.2" />
     <PackageReference Include="Polly" Version="8.3.1" />
@@ -161,6 +161,26 @@
       <AutoGen>True</AutoGen>
       <DependentUpon>Resources.resx</DependentUpon>
     </Compile>
+    <Compile Update="Indexers\BuddyComplex\BuddyComplexIndexerGenerator.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>BuddyComplexIndexerGenerator.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Indexers\MangaStream\MangaStreamIndexerGenerator.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>MangaStreamIndexerGenerator.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Indexers\Madara\MadaraIndexerGenerator.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>MadaraIndexerGenerator.tt</DependentUpon>
+    </Compile>
+    <Compile Update="Indexers\NepNep\NepNepIndexerGenerator.cs">
+      <AutoGen>True</AutoGen>
+      <DesignTime>True</DesignTime>
+      <DependentUpon>NepNepIndexerGenerator.tt</DependentUpon>
+    </Compile>
   </ItemGroup>
 
   <ItemGroup>
@@ -190,6 +210,22 @@
     </None>
     <None Update="Content\fonts\glyphicons-halflings-regular.woff2">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </None>
+    <None Update="Indexers\BuddyComplex\BuddyComplexIndexerGenerator.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>BuddyComplexIndexerGenerator.cs</LastGenOutput>
+    </None>
+    <None Update="Indexers\MangaStream\MangaStreamIndexerGenerator.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>MangaStreamIndexerGenerator.cs</LastGenOutput>
+    </None>
+    <None Update="Indexers\Madara\MadaraIndexerGenerator.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>MadaraIndexerGenerator.cs</LastGenOutput>
+    </None>
+    <None Update="Indexers\NepNep\NepNepIndexerGenerator.tt">
+      <Generator>TextTemplatingFileGenerator</Generator>
+      <LastGenOutput>NepNepIndexerGenerator.cs</LastGenOutput>
     </None>
   </ItemGroup>
 
