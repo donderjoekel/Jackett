@@ -34,7 +34,6 @@ namespace Jackett.Common.Plumbing
                    .Except<ImdbTitleResultFilterProvider>()
                    .Except<BaseMetaIndexer>()
                    .Except<AggregateIndexer>()
-                   .Except<CardigannIndexer>()
                    .AsImplementedInterfaces().SingleInstance();
 
 

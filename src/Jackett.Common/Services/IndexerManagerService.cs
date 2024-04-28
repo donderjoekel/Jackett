@@ -90,7 +90,6 @@ namespace Jackett.Common.Services
 
             MigrateRenamedIndexers();
             InitIndexers();
-            InitCardigannIndexers(path);
             InitMetaIndexers();
             RemoveLegacyConfigurations();
         }
@@ -157,79 +156,6 @@ namespace Jackett.Common.Services
 
             _logger.Info($"Loaded {nativeIndexers.Count} Native indexers.");
             _logger.Debug($"Native indexers loaded: {string.Join(", ", nativeIndexers.Select(i => i.Id))}");
-        }
-
-        private void InitCardigannIndexers(List<string> path)
-        {
-            _logger.Info("Loading Cardigann indexers from: " + string.Join(", ", path));
-
-            var deserializer = new DeserializerBuilder()
-                        .WithNamingConvention(CamelCaseNamingConvention.Instance)
-                        //.IgnoreUnmatchedProperties()
-                        .Build();
-
-            try
-            {
-                var directoryInfos = path.Select(p => new DirectoryInfo(p));
-                var existingDirectories = directoryInfos.Where(d => d.Exists);
-                var files = existingDirectories.SelectMany(d => d.GetFiles("*.yml"));
-                var definitions = files.Select(file =>
-                {
-                    _logger.Debug("Loading Cardigann definition " + file.FullName);
-                    try
-                    {
-                        var definitionString = File.ReadAllText(file.FullName);
-                        var definition = deserializer.Deserialize<IndexerDefinition>(definitionString);
-                        return definition;
-                    }
-                    catch (Exception e)
-                    {
-                        _logger.Error($"Error while parsing Cardigann definition {file.FullName}\n{e}");
-                        return null;
-                    }
-                }).Where(definition => definition != null);
-
-                var cardigannIndexers = definitions.Select(definition =>
-                {
-                    try
-                    {
-                        // create own webClient instance for each indexer (separate cookies stores, etc.)
-                        var indexerWebClientInstance = (WebClient)Activator.CreateInstance(_webClient.GetType(), _processService, _logger, _globalConfigService, _serverConfig);
-
-                        IIndexer indexer = new CardigannIndexer(_configService, indexerWebClientInstance, _logger, _protectionService, _cacheService, definition);
-                        _configService.Load(indexer);
-                        return indexer;
-                    }
-                    catch (Exception e)
-                    {
-                        _logger.Error($"Error while creating Cardigann instance from definition ID={definition.Id}: {e}");
-                        return null;
-                    }
-                }).Where(cardigannIndexer => cardigannIndexer != null).ToList(); // Explicit conversion to list to avoid repeated resource loading
-
-                var cardigannCounter = 0;
-                var cardiganIds = new List<string>();
-                foreach (var indexer in cardigannIndexers)
-                {
-                    if (_indexers.ContainsKey(indexer.Id))
-                    {
-                        _logger.Warn($"Ignoring definition ID {indexer.Id}: The indexer already exists");
-                        continue;
-                    }
-                    _indexers.Add(indexer.Id, indexer);
-
-                    cardigannCounter++;
-                    cardiganIds.Add(indexer.Id);
-                }
-
-                _logger.Info($"Loaded {cardigannCounter} Cardigann indexers.");
-                _logger.Debug($"Cardigann indexers loaded: {string.Join(", ", cardiganIds)}");
-            }
-            catch (Exception e)
-            {
-                _logger.Error($"Error while loading Cardigann definitions: {e}");
-            }
-            _logger.Info($"Loaded {_indexers.Count} indexers in total");
         }
 
         public void InitMetaIndexers()
