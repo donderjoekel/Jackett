@@ -32,7 +32,7 @@ namespace Jackett.Common.Indexers.Abstract
             var match = Regex.Match(result.ContentString, @"(?=Directory =).+?(\[.+?\])\;");
             var json = match.Groups[1].Value;
             var directory = JsonConvert.DeserializeObject<List<DirectoryItem>>(json);
-            var items = directory.Where(x => x.Slug.ContainsIgnoreCase(query.SanitizedSearchTerm)).ToList();
+            var items = directory.Where(x => x.Slug.ContainsIgnoreCase(query.SanitizedSearchTerm) || x.al.ContainsIgnoreCase(query.SanitizedSearchTerm)).ToList();
             foreach (var directoryItem in items)
             {
                 result = await RequestWithCookiesAndRetryAsync(SiteLink + "manga/" + directoryItem.Index);
