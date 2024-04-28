@@ -192,10 +192,35 @@ namespace Jackett.Common.Indexers.Abstract
 
         protected override Task<IEnumerable<string>> GetChapterImageLinks(WebResult response)
         {
-            var match = Regex.Match(response.ContentString, @"ts_reader\.run\((.*?(?=\);|},))");
+            var possibleRegex = new List<Regex>()
+            {
+                new Regex(@"ts_reader\.run\((\{.+\}),"),
+                new Regex(@"ts_reader\.run\((.*?(?=\);|},))")
+            };
+
+            foreach (var regex in possibleRegex)
+            {
+                try
+                {
+                    var links = GetChapterImageLinks(response, regex);
+                    if (links.Any())
+                        return Task.FromResult<IEnumerable<string>>(links);
+                }
+                catch (Exception e)
+                {
+                    // Suppress
+                }
+            }
+
+            return Task.FromResult<IEnumerable<string>>(Array.Empty<string>());
+        }
+
+        private string[] GetChapterImageLinks(WebResult result, Regex regex)
+        {
+            var match = regex.Match(result.ContentString);
             if (!match.Success)
             {
-                return Task.FromResult<IEnumerable<string>>(Array.Empty<string>());
+                return Array.Empty<string>();
             }
 
             var json = match.Groups[1].Value;
@@ -206,7 +231,7 @@ namespace Jackett.Common.Indexers.Abstract
                 throw new InvalidOperationException("Unexpected number of sources found in loader data");
             }
 
-            return Task.FromResult<IEnumerable<string>>(loaderData.sources.First().images);
+            return loaderData.sources.First().images;
         }
 
         private class SearchResponse
