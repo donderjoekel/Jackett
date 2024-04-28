@@ -11,6 +11,7 @@ using Jackett.Common.Models;
 using Jackett.Common.Models.Config;
 using Jackett.Common.Services.Interfaces;
 using Jackett.Common.Utils.Clients;
+using MonoTorrent;
 using NLog;
 using YamlDotNet.Serialization;
 using YamlDotNet.Serialization.NamingConventions;
@@ -236,7 +237,7 @@ namespace Jackett.Common.Services
         {
             var stopwatch = Stopwatch.StartNew();
 
-            var indexer = GetIndexer(name);
+            var indexer = GetWebIndexer(name);
 
             var query = new TorznabQuery
             {
@@ -246,6 +247,17 @@ namespace Jackett.Common.Services
             };
 
             var result = await indexer.ResultsForQuery(query);
+
+            if (result.Releases.Any())
+            {
+                var releaseInfo = result.Releases.First();
+                var download = await indexer.Download(releaseInfo.Link);
+                if (download.Length == 0)
+                    throw new Exception($"Test download in {indexer.Name} => Downloaded 0 bytes");
+                var torrent = await Torrent.LoadAsync(download);
+                if (torrent.Files == null || torrent.Files.Count == 0)
+                    throw new Exception($"Test download in {indexer.Name} => Downloaded torrent has no files");
+            }
 
             stopwatch.Stop();
 
