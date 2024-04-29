@@ -182,7 +182,7 @@ namespace Jackett.Common.Indexers
             // eliminate excess results
             if (query.Limit > 0)
             {
-                filteredResults = filteredResults.Take(query.Limit).ToList();
+                filteredResults = filteredResults.Skip(query.Offset).Take(query.Limit).ToList();
             }
 
             return filteredResults;

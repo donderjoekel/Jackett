@@ -42,6 +42,7 @@ namespace Jackett.Common.Indexers.Abstract
 
         public sealed override TorznabCapabilities TorznabCaps => SetCapabilities();
 
+        public override bool SupportsPagination => true;
         public override string Type => "public";
         public override string Language => "en-US";
         public override string Description => string.Empty;
